@@ -3,11 +3,8 @@ package org.skypro.skyshop.basket;
 import org.skypro.skyshop.product.Product;
 
 public class ProductBasket {
-    private Product[] items;
+    private final Product[] items;
 
-    public void setItems(Product[] items) {
-        this.items = items;
-    }
     public ProductBasket() {
         items = new Product[5];
     }
