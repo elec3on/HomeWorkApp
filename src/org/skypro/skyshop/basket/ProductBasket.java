@@ -39,7 +39,7 @@ public class ProductBasket {
         boolean isEmpty = true;
         for (Product item : items) {
             if (item != null) {
-                System.out.println(item.getProductName() + ": " + item.getPrice());
+                System.out.println(item.getName() + ": " + item.getPrice());
                 isEmpty = false;
             }
         }
@@ -54,7 +54,7 @@ public class ProductBasket {
     // Проверка наличия продукта по имени
     public boolean containsByName(String ProductName) {
         for (Product item : items) {
-            if (item != null && item.getProductName().equals(ProductName)) {
+            if (item != null && item.getName().equals(ProductName)) {
                 return true;
             }
         }

@@ -12,7 +12,7 @@ public class App {
         Product bread = new Product("Хлеб", 80);
         Product milk = new Product("Молоко", 120);
         Product eggs = new Product("Яйца", 150);
-        Product cheese = new Product("Сыр", 300);
+        Product cheese = new Product("Сыр", 800);
         Product cake = new Product("Торт", 600); // лишний, чтобы проверить переполнение
 
         System.out.println("--- Добавление продуктов ---");
