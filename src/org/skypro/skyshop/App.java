@@ -1,19 +1,22 @@
 package org.skypro.skyshop;
 
+import org.skypro.skyshop.product.DiscountedProduct;
+import org.skypro.skyshop.product.FixPriceProduct;
 import org.skypro.skyshop.product.Product;
 import org.skypro.skyshop.basket.ProductBasket;
+import org.skypro.skyshop.product.SimpleProduct;
 
 public class App {
     public static void main(String[] args) {
         ProductBasket basket = new ProductBasket();
 
         // Создаём несколько продуктов
-        Product apple = new Product("Яблоко", 100);
-        Product bread = new Product("Хлеб", 80);
-        Product milk = new Product("Молоко", 120);
-        Product eggs = new Product("Яйца", 150);
-        Product cheese = new Product("Сыр", 800);
-        Product cake = new Product("Торт", 600); // лишний, чтобы проверить переполнение
+        Product apple = new SimpleProduct("P101","Яблоко", 100);
+        Product bread = new SimpleProduct("P102","Хлеб", 80);
+        Product milk = new SimpleProduct("P103","Молоко", 120);
+        Product eggs = new SimpleProduct("P104","Яйца", 150);
+        Product cheese = new SimpleProduct("P105","Сыр", 800);
+        Product cake = new SimpleProduct("P106","Торт", 600); // лишний, чтобы проверить переполнение
 
         System.out.println("--- Добавление продуктов ---");
         basket.addProduct(apple);
@@ -48,5 +51,13 @@ public class App {
 
         System.out.println("\n--- Поиск в пустой корзине ---");
         System.out.println("Есть ли 'Яблоко' в пустой корзине: " + basket.containsByName("Яблоко"));
+
+        basket.addProduct(new SimpleProduct("1", "Молоко", 89.0));
+        basket.addProduct(new DiscountedProduct("2", "Хлеб", 50.0, 20));
+        basket.addProduct(new FixPriceProduct("3", "Сахар"));
+        basket.addProduct(new DiscountedProduct("4", "Сок", 120.0, 15));
+        basket.addProduct(new FixPriceProduct("5", "Соль"));
+        System.out.println("\n--- Вывод списка товаров корзины специальных типов ---");
+        basket.printBasket();
     }
 }
