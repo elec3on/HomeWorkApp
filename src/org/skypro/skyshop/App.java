@@ -6,9 +6,7 @@ import org.skypro.skyshop.content.Article;
 import org.skypro.skyshop.basket.ProductBasket;
 import org.skypro.skyshop.product.SimpleProduct;
 import org.skypro.skyshop.search.SearchEngine;
-
 import java.util.Arrays;
-
 
 public class App {
     public static void main(String[] args) {
