@@ -8,6 +8,12 @@ public abstract class Product implements Searchable {
 
     public Product(String id, String name) {
         this.id = id;
+
+        // Проверка названия продукта: не null и не пустая/пробельная строка
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Название продукта не может быть null или пустым (в том числе состоять только из пробелов).");
+        }
+
         this.name = name;
     }
 
@@ -25,6 +31,9 @@ public abstract class Product implements Searchable {
     }
 
     public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Название продукта не может быть null или пустым (в том числе состоять только из пробелов).");
+        }
         this.name = name;
     }
 
