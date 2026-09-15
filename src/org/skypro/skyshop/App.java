@@ -4,12 +4,13 @@ import org.skypro.skyshop.product.DiscountedProduct;
 import org.skypro.skyshop.product.FixPriceProduct;
 import org.skypro.skyshop.content.Article;
 import org.skypro.skyshop.basket.ProductBasket;
+import org.skypro.skyshop.product.Product;
 import org.skypro.skyshop.product.SimpleProduct;
 import org.skypro.skyshop.search.BestResultNotFound;
 import org.skypro.skyshop.search.SearchEngine;
 import org.skypro.skyshop.search.Searchable;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class App {
     public static void main(String[] args) {
@@ -37,7 +38,7 @@ public class App {
         Article article3 = new Article("Сахар и соль", "Сахар и соль — самые популярные приправы на кухне.");
 
         // Создаём поисковый движок
-        SearchEngine engine = new SearchEngine(10);
+        SearchEngine engine = new SearchEngine();
         engine.add(milk);
         engine.add(bread);
         engine.add(sugar);
@@ -49,16 +50,28 @@ public class App {
 
         // Поиск по разным строкам
         System.out.println("Поиск «Молоко»:");
-        System.out.println(Arrays.toString(engine.search("Молоко")));
+        List<Searchable> results1 = engine.search("Молоко");
+        for (Searchable result : results1) {
+            System.out.println(result.getStringRepresentation());
+        }
 
         System.out.println("\nПоиск «Са»:");
-        System.out.println(Arrays.toString(engine.search("Са")));
+        List<Searchable> results2 = engine.search("Са");
+        for (Searchable result : results2) {
+            System.out.println(result.getStringRepresentation());
+        }
 
         System.out.println("\nПоиск «хлеб»:");
-        System.out.println(Arrays.toString(engine.search("хлеб")));
+        List<Searchable> results3 = engine.search("хлеб");
+        for (Searchable result : results3) {
+            System.out.println(result.getStringRepresentation());
+        }
 
         System.out.println("\nПоиск «О»:");
-        System.out.println(Arrays.toString(engine.search("О")));
+        List<Searchable> results4 = engine.search("О");
+        for (Searchable result : results4) {
+            System.out.println(result.getStringRepresentation());
+        }
         System.out.println("\n----------------------------------------------------\n");
 
 // Товары с явно неправильными данными — демонстрация обработки исключений
@@ -118,5 +131,35 @@ public class App {
         }
 
         System.out.println("\nПрограмма завершена без аварийного падения благодаря обработке исключений.");
+
+        // --- Демонстрация removeAllByName ---
+
+// 1. Удалить существующий продукт из корзины
+        System.out.println("\n----------------------------------------------------\n");
+        System.out.println("Удаление продукта «Сахар» из корзины:");
+        List<Product> removed = basket.removeAllByName("Сахар");
+
+// 2. Вывести удалённые продукты на экран
+        System.out.println("Удалённые продукты:");
+        for (Product p : removed) {
+            System.out.println("- " + p.getName());
+        }
+
+// 3. Вывести содержимое корзины
+        System.out.println();
+        basket.printBasket();
+
+// 4. Удалить несуществующий продукт
+        System.out.println("\nУдаление продукта «Кофе» (которого нет в корзине):");
+        List<Product> removedNotFound = basket.removeAllByName("Кофе");
+
+// 5. Проверить, что список пустой, и вывести сообщение
+        if (removedNotFound.isEmpty()) {
+            System.out.println("Список пуст");
+        }
+
+// 6. Вывести содержимое корзины на экран
+        System.out.println();
+        basket.printBasket();
     }
 }
