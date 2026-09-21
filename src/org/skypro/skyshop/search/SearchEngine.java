@@ -1,76 +1,81 @@
 package org.skypro.skyshop.search;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class SearchEngine {
-    private final Searchable[] items;
+    private final List<Searchable> items;
 
-    public SearchEngine(int capacity) {
-        this.items = new Searchable[capacity];
+    public SearchEngine() {
+        this.items = new LinkedList<>();
     }
 
-    public void add(Searchable searchable) {
-        for (int i = 0; i < items.length; i++) {
-            if (items[i] == null) {
-                items[i] = searchable;
-                return;
-            }
+    public void add(Searchable item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Нельзя добавить null в поисковый движок");
         }
-        // Массив заполнен — элемент не добавляется
+        items.add(item);
     }
 
-    public Searchable[] search(String query) {
-        Searchable[] results = new Searchable[5];
-        int found = 0;
-        for (int i = 0; i < items.length && found < 5; i++) {
-            if (items[i] != null && items[i].getSearchTerm().contains(query)) {
-                results[found] = items[i];
-                found++;
+    /**
+     * Ищет все элементы, имя или текст которых содержит искомую строку.
+     * Возвращает список всех подходящих результатов.
+     */
+    public List<Searchable> search(String query) {
+        List<Searchable> results = new LinkedList<>();
+
+        if (query == null || query.trim().isEmpty()) {
+            return results;
+        }
+
+        String lowerQuery = query.toLowerCase();
+
+        for (Searchable item : items) {
+            String text = item.getStringRepresentation().toLowerCase();
+            if (text.contains(lowerQuery)) {
+                results.add(item);
             }
         }
+
         return results;
     }
 
-    public Searchable findBestMatch(String search) throws BestResultNotFound {
-        // 1) Некорректный запрос → сразу выбрасываем исключение
-        if (search == null || search.isEmpty()) {
-            throw new BestResultNotFound(search);
+    /**
+     * Ищет лучший результат по совпадению.
+     * Бросает BestResultNotFound, если ничего не найдено.
+     */
+    public Searchable findBestMatch(String query) throws BestResultNotFound {
+        if (query == null || query.trim().isEmpty()) {
+            throw new BestResultNotFound("Пустой или null запрос");
         }
 
-        Searchable bestMatch = null;
-        int maxCount = 0;
+        String lowerQuery = query.toLowerCase();
+        Searchable best = null;
+        int bestCount = 0;
 
-        for (int i = 0; i < items.length; i++) {
-            if (items[i] == null) continue;
+        for (Searchable item : items) {
+            String text = item.getStringRepresentation().toLowerCase();
+            int count = countOccurrences(text, lowerQuery);
 
-            String term = items[i].getSearchTerm();
-            if (term == null || term.isEmpty()) continue;
-
-            int count = countOccurrences(term, search);
-
-            if (count > maxCount) {
-                maxCount = count;
-                bestMatch = items[i];
+            if (count > bestCount) {
+                bestCount = count;
+                best = item;
             }
         }
 
-        // 2) Если ничего не найдено (ни одного вхождения) → исключение
-        if (bestMatch == null || maxCount == 0) {
-            throw new BestResultNotFound(search);
+        if (best == null) {
+            throw new BestResultNotFound("Не найдено результатов для запроса: " + query);
         }
 
-        return bestMatch;
+        return best;
     }
 
-    // Подсчёт непересекающихся вхождений подстроки (безопасно даже для пустой подстроки,
-    // но мы вызываем только с непустой)
-    private int countOccurrences(String text, String substring) {
+    private int countOccurrences(String text, String query) {
         int count = 0;
         int index = 0;
-        int foundIndex = text.indexOf(substring, index);
-
-        while (foundIndex != -1) {
+        while ((index = text.indexOf(query, index)) != -1) {
             count++;
-            index = foundIndex + substring.length();
-            foundIndex = text.indexOf(substring, index);
+            index += query.length();
         }
         return count;
     }
