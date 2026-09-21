@@ -2,6 +2,8 @@ package org.skypro.skyshop.search;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class SearchEngine {
     private final List<Searchable> items;
@@ -18,11 +20,13 @@ public class SearchEngine {
     }
 
     /**
-     * Ищет все элементы, имя или текст которых содержит искомую строку.
-     * Возвращает список всех подходящих результатов.
+     * Ищет все элементы, текст которых содержит искомую строку.
+     * Возвращает TreeMap: ключ — имя (строковое представление) объекта,
+     * значение — сам объект. Мапа отсортирована по ключу (по имени).
      */
-    public List<Searchable> search(String query) {
-        List<Searchable> results = new LinkedList<>();
+    public Map<String, Searchable> search(String query) {
+        // TreeMap обеспечивает сортировку по ключу (по имени объекта)
+        Map<String, Searchable> results = new TreeMap<>();
 
         if (query == null || query.trim().isEmpty()) {
             return results;
@@ -33,7 +37,8 @@ public class SearchEngine {
         for (Searchable item : items) {
             String text = item.getStringRepresentation().toLowerCase();
             if (text.contains(lowerQuery)) {
-                results.add(item);
+                // Ключ — строковое представление, значение — сам объект
+                results.put(item.getStringRepresentation(), item);
             }
         }
 
@@ -41,7 +46,7 @@ public class SearchEngine {
     }
 
     /**
-     * Ищет лучший результат по совпадению.
+     * Ищет лучший результат по количеству вхождений.
      * Бросает BestResultNotFound, если ничего не найдено.
      */
     public Searchable findBestMatch(String query) throws BestResultNotFound {

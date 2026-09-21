@@ -11,6 +11,7 @@ import org.skypro.skyshop.search.SearchEngine;
 import org.skypro.skyshop.search.Searchable;
 
 import java.util.List;
+import java.util.Map;
 
 public class App {
     public static void main(String[] args) {
@@ -50,26 +51,26 @@ public class App {
 
         // Поиск по разным строкам
         System.out.println("Поиск «Молоко»:");
-        List<Searchable> results1 = engine.search("Молоко");
-        for (Searchable result : results1) {
+        Map<String, Searchable> results1 = engine.search("Молоко");
+        for (Searchable result : results1.values()) {
             System.out.println(result.getStringRepresentation());
         }
 
         System.out.println("\nПоиск «Са»:");
-        List<Searchable> results2 = engine.search("Са");
-        for (Searchable result : results2) {
+        Map<String, Searchable> results2 = engine.search("Са");
+        for (Searchable result : results2.values()) {
             System.out.println(result.getStringRepresentation());
         }
 
         System.out.println("\nПоиск «хлеб»:");
-        List<Searchable> results3 = engine.search("хлеб");
-        for (Searchable result : results3) {
+        Map<String, Searchable> results3 = engine.search("хлеб");
+        for (Searchable result : results3.values()) {
             System.out.println(result.getStringRepresentation());
         }
 
         System.out.println("\nПоиск «О»:");
-        List<Searchable> results4 = engine.search("О");
-        for (Searchable result : results4) {
+        Map<String, Searchable> results4 = engine.search("О");
+        for (Searchable result : results4.values()) {
             System.out.println(result.getStringRepresentation());
         }
         System.out.println("\n----------------------------------------------------\n");
