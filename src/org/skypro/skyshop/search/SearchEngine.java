@@ -1,15 +1,16 @@
 package org.skypro.skyshop.search;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.TreeSet;
+import java.util.Comparator;
 
 public class SearchEngine {
-    private final List<Searchable> items;
+    // HashSet для хранения — быстрое добавление и проверка наличия
+    private final Set<Searchable> items;
 
     public SearchEngine() {
-        this.items = new LinkedList<>();
+        this.items = new HashSet<>();
     }
 
     public void add(Searchable item) {
@@ -21,24 +22,23 @@ public class SearchEngine {
 
     /**
      * Ищет все элементы, текст которых содержит искомую строку.
-     * Возвращает TreeMap: ключ — имя (строковое представление) объекта,
-     * значение — сам объект. Мапа отсортирована по ключу (по имени).
+     * Возвращает TreeSet, отсортированный по имени (getStringRepresentation) в алфавитном порядке.
+     * Компаратор передан лямбдой.
      */
-    public Map<String, Searchable> search(String query) {
-        // TreeMap обеспечивает сортировку по ключу (по имени объекта)
-        Map<String, Searchable> results = new TreeMap<>();
+    public Set<Searchable> search(String query) {
+        // Компаратор сортирует по строковому представлению (имени) в алфавитном порядке
+        Set<Searchable> results = new TreeSet<>(
+                Comparator.comparing(Searchable::getSearchTerm)
+        );
 
         if (query == null || query.trim().isEmpty()) {
             return results;
         }
 
-        String lowerQuery = query.toLowerCase();
-
         for (Searchable item : items) {
-            String text = item.getStringRepresentation().toLowerCase();
-            if (text.contains(lowerQuery)) {
-                // Ключ — строковое представление, значение — сам объект
-                results.put(item.getStringRepresentation(), item);
+            String searchTerm = item.getSearchTerm().toLowerCase();
+            if (searchTerm.contains(query)) {
+                results.add(item);
             }
         }
 
@@ -54,13 +54,17 @@ public class SearchEngine {
             throw new BestResultNotFound("Пустой или null запрос");
         }
 
-        String lowerQuery = query.toLowerCase();
         Searchable best = null;
         int bestCount = 0;
 
         for (Searchable item : items) {
-            String text = item.getStringRepresentation().toLowerCase();
-            int count = countOccurrences(text, lowerQuery);
+            String searchTerm = item.getSearchTerm();
+            int count = 0;
+            int index = 0;
+            while ((index = searchTerm.indexOf(query, index)) != -1) {
+                count++;
+                index += query.length();
+            }
 
             if (count > bestCount) {
                 bestCount = count;
@@ -73,15 +77,5 @@ public class SearchEngine {
         }
 
         return best;
-    }
-
-    private int countOccurrences(String text, String query) {
-        int count = 0;
-        int index = 0;
-        while ((index = text.indexOf(query, index)) != -1) {
-            count++;
-            index += query.length();
-        }
-        return count;
     }
 }
