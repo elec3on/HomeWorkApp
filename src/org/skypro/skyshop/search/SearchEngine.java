@@ -4,9 +4,9 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class SearchEngine {
-    // HashSet для хранения — быстрое добавление и проверка наличия
     private final Set<Searchable> items;
 
     public SearchEngine() {
@@ -22,27 +22,21 @@ public class SearchEngine {
 
     /**
      * Ищет все элементы, текст которых содержит искомую строку.
-     * Возвращает TreeSet, отсортированный по имени (getStringRepresentation) в алфавитном порядке.
-     * Компаратор передан лямбдой.
+     * Возвращает TreeSet, отсортированный по имени (getSearchTerm) в алфавитном порядке.
      */
     public Set<Searchable> search(String query) {
-        // Компаратор сортирует по строковому представлению (имени) в алфавитном порядке
-        Set<Searchable> results = new TreeSet<>(
-                Comparator.comparing(Searchable::getSearchTerm)
-        );
-
+        // Если запрос пустой или null — возвращаем пустой TreeSet
         if (query == null || query.trim().isEmpty()) {
-            return results;
+            return new TreeSet<>(Comparator.comparing(Searchable::getSearchTerm));
         }
 
-        for (Searchable item : items) {
-            String searchTerm = item.getSearchTerm().toLowerCase();
-            if (searchTerm.contains(query)) {
-                results.add(item);
-            }
-        }
+        String lowerQuery = query.toLowerCase();
 
-        return results;
+        return items.stream()
+                .filter(item -> item.getSearchTerm().toLowerCase().contains(lowerQuery))
+                .collect(Collectors.toCollection(
+                        () -> new TreeSet<>(Comparator.comparing(Searchable::getSearchTerm))
+                ));
     }
 
     /**
