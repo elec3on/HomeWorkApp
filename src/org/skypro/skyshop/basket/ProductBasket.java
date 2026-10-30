@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class ProductBasket {
-    // Храним продукты в Map: ключ — нормализованное имя (trim().toLowerCase()),
-    // значение — список продуктов с таким именем (поддерживаем дубликаты).
-    // HashMap даёт быстрый поиск по имени (O(1)).
+    /** Храним продукты в Map: ключ — нормализованное имя (trim().toLowerCase()),
+    * значение — список продуктов с таким именем (поддерживаем дубликаты).
+    * HashMap даёт быстрый поиск по имени (O(1)).
+    */
     private final Map<String, List<Product>> items;
 
     public ProductBasket() {
@@ -44,7 +46,7 @@ public class ProductBasket {
         String key = normalizeName(product.getName());
         List<Product> list = items.get(key);
         if (list != null) {
-            boolean removed = list.remove(product); // удаляем конкретный объект из списка
+            boolean removed = list.remove(product);
             if (list.isEmpty()) {
                 // если продуктов с этим именем не осталось — убираем ключ из Map
                 items.remove(key);
@@ -64,56 +66,53 @@ public class ProductBasket {
 
     /**
      * Возвращает общее количество товаров в корзине.
-     * Суммируем размеры всех списков внутри Map.
+     * flatMap превращает Stream<List<Product>> в Stream<Product>, затем считаем все элементы.
      */
     public int countProduct() {
-        int count = 0;
-        for (List<Product> list : items.values()) {
-            count += list.size();
-        }
-        return count;
+        return (int) items.values().stream()
+                .flatMap(List::stream)
+                .count();
     }
 
     /**
-     * Возвращает все продукты как Iterable для удобного перебора.
-     * Собираем все продукты из всех списков Map в один общий список.
+     * Возвращает все продукты как Iterable.
+     * Собираем все продукты из всех списков в один LinkedList.
      */
     public Iterable<Product> getItems() {
-        List<Product> all = new LinkedList<>();
-        for (List<Product> list : items.values()) {
-            all.addAll(list);
-        }
+        List<Product> all = items.values().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toCollection(LinkedList::new));
         return all;
     }
 
     /**
-     * Считает количество «специальных» товаров (у которых isSpecial() == true).
-     * Проходим по всем спискам в Map, затем по каждому продукту внутри списка.
+     * Публичный метод countSpecial просто делегирует подсчёт в приватный getSpecialCount.
      */
     public int countSpecial() {
-        int count = 0;
-        for (List<Product> list : items.values()) {
-            for (Product product : list) {
-                if (product.isSpecial()) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return (int) getSpecialCount();
     }
 
     /**
-     * Вычисляет общую стоимость всех товаров в корзине.
-     * Перебираем все списки в Map и суммируем цены продуктов.
+     * Приватный метод для подсчёта специальных товаров.
+     * Использует filter и count поверх плоского потока продуктов.
+     */
+    private long getSpecialCount() {
+        return items.values().stream()
+                .flatMap(List::stream)
+                .filter(Product::isSpecial)
+                .count();
+    }
+
+    /**
+     * Считаем сумму в копейках через mapToInt и sum, затем возвращаем как double (рубли).
      */
     public double getTotalCost() {
-        double total = 0.0;
-        for (List<Product> list : items.values()) {
-            for (Product product : list) {
-                total += product.getPrice();
-            }
-        }
-        return total;
+        long sumInCents = items.values().stream()
+                .flatMap(List::stream)
+                .mapToInt(p -> (int) Math.round(p.getPrice() * 100))
+                .sum();
+
+        return sumInCents / 100.0;
     }
 
     /**
@@ -136,7 +135,6 @@ public class ProductBasket {
         if (name == null || name.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        // remove возвращает удалённый список или null, если ключа не было
         List<Product> removed = items.remove(normalizeName(name));
         return removed != null ? removed : new ArrayList<>();
     }
@@ -149,9 +147,10 @@ public class ProductBasket {
     }
 
     /**
-     * Печатает содержимое корзины в консоль.
-     * Для вывода используем двойной цикл: сначала по спискам (значениям Map),
-     * затем по каждому продукту в списке. Нумерация идёт подряд.
+     * Печатает содержимое корзины.
+     * Товары выводятся через forEach поверх плоского потока.
+     * Нумерация сохранена с помощью массива int[1], чтобы менять индекс внутри лямбды.
+     * Итоговые строки используют новые методы countProduct(), countSpecial(), getTotalCost().
      */
     public void printBasket() {
         if (items.isEmpty()) {
@@ -160,24 +159,20 @@ public class ProductBasket {
         }
 
         System.out.println("Содержимое корзины:");
-        int index = 1;
-        // items.values() даёт коллекцию всех списков продуктов
-        for (List<Product> list : items.values()) {
-            for (Product product : list) {
-                System.out.printf("%d. %s%n", index, product);
-                index++;
-            }
-        }
+
+        int[] index = {1}; // массив, чтобы значение можно было менять из лямбды
+        items.values().stream()
+                .flatMap(List::stream)
+                .forEach(product -> {
+                    System.out.printf("%d. %s%n", index[0], product);
+                    index[0]++;
+                });
+
         System.out.printf("Всего товаров: %d%n", countProduct());
         System.out.printf("Специальных товаров (по флагу isSpecial): %d%n", countSpecial());
         System.out.printf("Общая стоимость: %.2f руб.%n", getTotalCost());
     }
 
-    /**
-     * Нормализует имя для использования в качестве ключа Map.
-     * Обрезает пробелы и приводит к нижнему регистру.
-     * null превращается в пустую строку, чтобы избежать ошибок.
-     */
     private static String normalizeName(String name) {
         return name == null ? "" : name.trim().toLowerCase();
     }
